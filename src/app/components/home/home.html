@@ -1,0 +1,164 @@
+<section class="hero">
+  <div class="hero__bg">
+    <div class="hero__grid"></div>
+  </div>
+
+  <div class="container hero__content">
+    <div class="hero__badge">
+      <span class="badge badge--gold">Advanced Encryption Standard</span>
+    </div>
+
+    <h1 class="hero__title">
+      Understand <span class="text-gradient">AES</span> Encryption
+    </h1>
+
+    <p class="hero__subtitle">
+      Explore the world's most widely used symmetric encryption algorithm.
+      Interactive visualizations, step-by-step demonstrations, and deep dives into the mathematics behind modern cryptography.
+    </p>
+
+    <div class="hero__actions">
+      <a routerLink="/demo" class="btn btn--primary">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+        Try Interactive Demo
+      </a>
+      <a routerLink="/overview" class="btn btn--secondary">
+        Learn the Basics
+      </a>
+    </div>
+
+    <div class="hero__stats">
+      @for (stat of stats; track stat.label) {
+        <div class="hero__stat">
+          <div class="hero__stat-value">{{ stat.value }}</div>
+          <div class="hero__stat-label">{{ stat.label }}</div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="section features">
+  <div class="container">
+    <div class="section__header">
+      <h2>Why <span class="text-gradient">AES</span> Matters</h2>
+      <p>The foundation of modern data security, protecting everything from your messages to government secrets.</p>
+    </div>
+
+    <div class="grid grid--2">
+      @for (feature of features; track feature.title) {
+        <div class="card feature-card">
+          <div class="feature-card__header">
+            <div class="feature-card__icon">
+              @switch (feature.icon) {
+                @case ('cube') {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                  </svg>
+                }
+                @case ('layers') {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                    <polyline points="2 17 12 22 22 17"></polyline>
+                    <polyline points="2 12 12 17 22 12"></polyline>
+                  </svg>
+                }
+                @case ('shield') {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    <polyline points="9 12 11 14 15 10"></polyline>
+                  </svg>
+                }
+                @case ('zap') {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                  </svg>
+                }
+              }
+            </div>
+            <span [class]="feature.badgeClass">{{ feature.badge }}</span>
+          </div>
+          <h3 class="feature-card__title">{{ feature.title }}</h3>
+          <p class="feature-card__desc">{{ feature.description }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="section explore">
+  <div class="container">
+    <div class="section__header">
+      <h2>Explore <span class="text-gradient">AES</span> In Depth</h2>
+      <p>From theoretical foundations to practical implementations.</p>
+    </div>
+
+    <div class="grid grid--3">
+      <a routerLink="/overview" class="explore-card card">
+        <div class="explore-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+        </div>
+        <h3>Algorithm Overview</h3>
+        <p>Understand the structure and flow of AES encryption.</p>
+      </a>
+
+      <a routerLink="/operations" class="explore-card card card--accent">
+        <div class="explore-card__icon explore-card__icon--accent">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+        </div>
+        <h3>Core Operations</h3>
+        <p>SubBytes, ShiftRows, MixColumns, AddRoundKey explained.</p>
+      </a>
+
+      <a routerLink="/modes" class="explore-card card">
+        <div class="explore-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+        </div>
+        <h3>Modes of Operation</h3>
+        <p>ECB, CBC, CTR, GCM - when and how to use them.</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="section cta">
+  <div class="container">
+    <div class="cta-box card card--static">
+      <div class="cta-box__content">
+        <h2>Ready to See AES in Action?</h2>
+        <p>Our interactive demo lets you encrypt text in real-time and watch every transformation step by step.</p>
+        <a routerLink="/demo" class="btn btn--accent">
+          Launch Interactive Demo
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </a>
+      </div>
+      <div class="cta-box__visual">
+        <div class="byte-grid cta-grid">
+          @for (byte of ctaBytes; track $index) {
+            <div class="byte" [style.animation-delay]="($index * 0.1) + 's'">
+              {{ byte.toString(16).padStart(2, '0') }}
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

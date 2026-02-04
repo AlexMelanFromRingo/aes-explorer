@@ -1,0 +1,245 @@
+<div class="page-header">
+  <div class="container">
+    <span class="badge">Block Cipher Modes</span>
+    <h1>Modes of <span class="text-gradient">Operation</span></h1>
+    <p>How to use AES securely for different data sizes and scenarios.</p>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div class="intro-text">
+      <p>
+        AES by itself can only encrypt 128-bit (16-byte) blocks. To encrypt larger data, we need <strong>modes of operation</strong> that define how to apply the block cipher repeatedly. The choice of mode significantly impacts security, performance, and functionality.
+      </p>
+    </div>
+
+    <div class="modes-layout">
+      <div class="modes-nav">
+        @for (mode of modes; track mode.id) {
+          <button
+            class="mode-nav-item"
+            [class.mode-nav-item--active]="selectedMode() === mode.id"
+            (click)="selectMode(mode.id)"
+          >
+            <span class="mode-nav-item__name">{{ mode.name }}</span>
+            <span class="mode-nav-item__full">{{ mode.fullName }}</span>
+            <div class="mode-nav-item__badges">
+              @if (mode.authenticated) {
+                <span class="mini-badge mini-badge--green">Auth</span>
+              }
+              @if (mode.parallel) {
+                <span class="mini-badge">Parallel</span>
+              }
+            </div>
+          </button>
+        }
+      </div>
+
+      <div class="mode-detail card card--static">
+        <div class="mode-header">
+          <div>
+            <h2>{{ getSelectedMode().name }}</h2>
+            <p class="mode-fullname">{{ getSelectedMode().fullName }}</p>
+          </div>
+          <div class="mode-badges">
+            <span [class]="getSecurityClass(getSelectedMode().security)">
+              {{ getSelectedMode().security === 'low' ? 'Low Security' : getSelectedMode().security === 'medium' ? 'Medium Security' : 'High Security' }}
+            </span>
+            @if (getSelectedMode().authenticated) {
+              <span class="badge badge--green">Authenticated</span>
+            }
+          </div>
+        </div>
+
+        <p class="mode-description">{{ getSelectedMode().description }}</p>
+
+        <div class="mode-diagram" [attr.data-mode]="selectedMode()">
+          @switch (selectedMode()) {
+            @case ('ecb') {
+              <div class="diagram-ecb">
+                <div class="diagram-row">
+                  <div class="diagram-block diagram-block--plain">P1</div>
+                  <div class="diagram-block diagram-block--plain">P2</div>
+                  <div class="diagram-block diagram-block--plain">P3</div>
+                </div>
+                <div class="diagram-row">
+                  <div class="diagram-arrow">AES</div>
+                  <div class="diagram-arrow">AES</div>
+                  <div class="diagram-arrow">AES</div>
+                </div>
+                <div class="diagram-row">
+                  <div class="diagram-block diagram-block--cipher">C1</div>
+                  <div class="diagram-block diagram-block--cipher">C2</div>
+                  <div class="diagram-block diagram-block--cipher">C3</div>
+                </div>
+                <p class="diagram-caption">Each block encrypted independently</p>
+              </div>
+            }
+            @case ('cbc') {
+              <div class="diagram-cbc">
+                <div class="diagram-flow">
+                  <div class="diagram-block diagram-block--iv">IV</div>
+                  <span class="diagram-xor">XOR</span>
+                  <div class="diagram-block diagram-block--plain">P1</div>
+                  <span class="diagram-arrow-right">AES</span>
+                  <div class="diagram-block diagram-block--cipher">C1</div>
+                </div>
+                <div class="diagram-flow">
+                  <div class="diagram-block diagram-block--chain">C1</div>
+                  <span class="diagram-xor">XOR</span>
+                  <div class="diagram-block diagram-block--plain">P2</div>
+                  <span class="diagram-arrow-right">AES</span>
+                  <div class="diagram-block diagram-block--cipher">C2</div>
+                </div>
+                <p class="diagram-caption">Blocks chained via XOR</p>
+              </div>
+            }
+            @case ('ctr') {
+              <div class="diagram-ctr">
+                <div class="diagram-flow">
+                  <div class="diagram-block diagram-block--counter">Nonce|1</div>
+                  <span class="diagram-arrow-right">AES</span>
+                  <span class="diagram-xor">XOR</span>
+                  <div class="diagram-block diagram-block--plain">P1</div>
+                  <span class="diagram-arrow-right">=</span>
+                  <div class="diagram-block diagram-block--cipher">C1</div>
+                </div>
+                <div class="diagram-flow">
+                  <div class="diagram-block diagram-block--counter">Nonce|2</div>
+                  <span class="diagram-arrow-right">AES</span>
+                  <span class="diagram-xor">XOR</span>
+                  <div class="diagram-block diagram-block--plain">P2</div>
+                  <span class="diagram-arrow-right">=</span>
+                  <div class="diagram-block diagram-block--cipher">C2</div>
+                </div>
+                <p class="diagram-caption">Counter encrypts keystream, XORed with plaintext</p>
+              </div>
+            }
+            @case ('gcm') {
+              <div class="diagram-gcm">
+                <div class="diagram-flow">
+                  <div class="diagram-block diagram-block--counter">Nonce|Ctr</div>
+                  <span class="diagram-arrow-right">AES</span>
+                  <span class="diagram-xor">XOR</span>
+                  <div class="diagram-block diagram-block--plain">P</div>
+                  <span class="diagram-arrow-right">=</span>
+                  <div class="diagram-block diagram-block--cipher">C</div>
+                </div>
+                <div class="diagram-auth">
+                  <div class="diagram-block diagram-block--aad">AAD</div>
+                  <span class="diagram-arrow-right">+</span>
+                  <div class="diagram-block diagram-block--cipher">C</div>
+                  <span class="diagram-arrow-right">GHASH</span>
+                  <div class="diagram-block diagram-block--tag">Tag</div>
+                </div>
+                <p class="diagram-caption">CTR encryption + GHASH authentication</p>
+              </div>
+            }
+            @case ('xts') {
+              <div class="diagram-xts">
+                <div class="diagram-flow">
+                  <div class="diagram-block diagram-block--tweak">Tweak</div>
+                  <span class="diagram-arrow-right">AES(K2)</span>
+                  <span class="diagram-xor">XOR</span>
+                </div>
+                <div class="diagram-flow">
+                  <div class="diagram-block diagram-block--plain">P</div>
+                  <span class="diagram-arrow-right">AES(K1)</span>
+                  <span class="diagram-xor">XOR</span>
+                  <div class="diagram-block diagram-block--cipher">C</div>
+                </div>
+                <p class="diagram-caption">Tweak-based encryption with two keys</p>
+              </div>
+            }
+          }
+        </div>
+
+        <div class="mode-details-grid">
+          <div class="mode-pros">
+            <h4>Advantages</h4>
+            <ul>
+              @for (pro of getSelectedMode().pros; track pro) {
+                <li>{{ pro }}</li>
+              }
+            </ul>
+          </div>
+
+          <div class="mode-cons">
+            <h4>Disadvantages</h4>
+            <ul>
+              @for (con of getSelectedMode().cons; track con) {
+                <li>{{ con }}</li>
+              }
+            </ul>
+          </div>
+        </div>
+
+        <div class="mode-usecase">
+          <h4>Recommended Use Case</h4>
+          <p>{{ getSelectedMode().useCase }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="comparison-table card card--static">
+      <h3>Quick Comparison</h3>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Mode</th>
+              <th>Parallel</th>
+              <th>Auth</th>
+              <th>IV/Nonce</th>
+              <th>Padding</th>
+              <th>Best For</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>ECB</strong></td>
+              <td class="yes">Yes</td>
+              <td class="no">No</td>
+              <td>None</td>
+              <td>Yes</td>
+              <td>Never use for data</td>
+            </tr>
+            <tr>
+              <td><strong>CBC</strong></td>
+              <td class="partial">Decrypt only</td>
+              <td class="no">No</td>
+              <td>Random IV</td>
+              <td>Yes</td>
+              <td>File encryption</td>
+            </tr>
+            <tr>
+              <td><strong>CTR</strong></td>
+              <td class="yes">Yes</td>
+              <td class="no">No</td>
+              <td>Unique nonce</td>
+              <td>No</td>
+              <td>Streaming</td>
+            </tr>
+            <tr class="recommended">
+              <td><strong>GCM</strong></td>
+              <td class="yes">Yes</td>
+              <td class="yes">Yes</td>
+              <td>Unique nonce</td>
+              <td>No</td>
+              <td>TLS, APIs</td>
+            </tr>
+            <tr>
+              <td><strong>XTS</strong></td>
+              <td class="yes">Yes</td>
+              <td class="no">No</td>
+              <td>Sector tweak</td>
+              <td>CTS</td>
+              <td>Disk encryption</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,167 @@
+<div class="page-header">
+  <div class="container">
+    <span class="badge badge--gold">History & Standards</span>
+    <h1>The Story of <span class="text-gradient">AES</span></h1>
+    <p>From competition to global standard - the journey of modern encryption.</p>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div class="history-grid">
+      <div class="history-main">
+        <article class="article">
+          <h2>The AES Competition</h2>
+          <p>
+            By the mid-1990s, the Data Encryption Standard (DES) was showing its age. With a 56-bit key length, it was increasingly vulnerable to brute-force attacks. In 1997, NIST announced an open competition to select a new encryption standard that would be secure, efficient, and freely available worldwide.
+          </p>
+          <p>
+            The competition attracted submissions from cryptographers across the globe. Unlike DES, which was developed in secret by IBM and the NSA, the AES selection process was completely transparent. All candidate algorithms were published for public scrutiny and cryptanalysis.
+          </p>
+
+          <h2>Why Rijndael Won</h2>
+          <p>
+            Rijndael was selected over strong competitors like Serpent (which had a higher security margin) and Twofish (from the creator of Blowfish). The key factors in Rijndael's victory were:
+          </p>
+          <ul>
+            <li><strong>Performance:</strong> Excellent speed in both software and hardware across all platforms</li>
+            <li><strong>Flexibility:</strong> Variable block and key sizes (though AES fixed the block size at 128 bits)</li>
+            <li><strong>Simplicity:</strong> Elegant mathematical structure that aids in security analysis</li>
+            <li><strong>Low memory requirements:</strong> Suitable for constrained devices</li>
+            <li><strong>Parallelization potential:</strong> Operations can be computed in parallel</li>
+          </ul>
+
+          <h2>Design Philosophy</h2>
+          <p>
+            Joan Daemen and Vincent Rijmen designed Rijndael with a clear philosophy: security through mathematical elegance. The algorithm's structure is based on well-understood mathematical concepts that can be formally analyzed.
+          </p>
+
+          <div class="principles-grid">
+            @for (principle of designPrinciples; track principle.title) {
+              <div class="principle-card card">
+                <h4>{{ principle.title }}</h4>
+                <p>{{ principle.description }}</p>
+              </div>
+            }
+          </div>
+
+          <h2>Security Analysis</h2>
+          <p>
+            Over two decades of intense cryptanalysis, no practical attack against AES has been found. The best known theoretical attacks include:
+          </p>
+
+          <div class="attack-table">
+            <div class="attack-row attack-row--header">
+              <span>Attack</span>
+              <span>Complexity</span>
+              <span>Practical?</span>
+            </div>
+            <div class="attack-row">
+              <span>Brute Force (AES-128)</span>
+              <span class="mono">2^128</span>
+              <span class="no">No</span>
+            </div>
+            <div class="attack-row">
+              <span>Biclique (AES-128)</span>
+              <span class="mono">2^126.1</span>
+              <span class="no">No</span>
+            </div>
+            <div class="attack-row">
+              <span>Related-Key (AES-256)</span>
+              <span class="mono">2^99.5</span>
+              <span class="no">No</span>
+            </div>
+            <div class="attack-row">
+              <span>Side-Channel</span>
+              <span class="mono">Varies</span>
+              <span class="maybe">Implementation-dependent</span>
+            </div>
+          </div>
+
+          <p>
+            The biclique attack, the best known attack against full AES, reduces the effective key strength by about 2 bits. This is cryptographically insignificant - even AES-128 with an effective strength of 126.1 bits remains completely secure.
+          </p>
+        </article>
+      </div>
+
+      <div class="history-sidebar">
+        <div class="creators-card card card--static">
+          <h4>The Creators</h4>
+          <div class="creator">
+            <div class="creator-avatar">JD</div>
+            <div class="creator-info">
+              <strong>Joan Daemen</strong>
+              <span>STMicroelectronics</span>
+            </div>
+          </div>
+          <div class="creator">
+            <div class="creator-avatar">VR</div>
+            <div class="creator-info">
+              <strong>Vincent Rijmen</strong>
+              <span>KU Leuven</span>
+            </div>
+          </div>
+          <p class="creator-note">Belgian cryptographers who designed Rijndael while working at Katholieke Universiteit Leuven.</p>
+        </div>
+
+        <div class="stats-card card card--static">
+          <h4>AES By Numbers</h4>
+          <div class="stat-item">
+            <span class="stat-value">15</span>
+            <span class="stat-label">Competition entries</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">5</span>
+            <span class="stat-label">Years to standardize</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">25+</span>
+            <span class="stat-label">Years in production</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">0</span>
+            <span class="stat-label">Practical attacks found</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section timeline-section">
+  <div class="container">
+    <h2 class="section-title">Timeline</h2>
+    <div class="timeline">
+      @for (event of timeline; track event.year) {
+        <div class="timeline-item" [class.timeline-item--highlight]="event.highlight">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <span class="timeline-year">{{ event.year }}</span>
+            <h4>{{ event.title }}</h4>
+            <p>{{ event.description }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="section rfc-section">
+  <div class="container">
+    <h2 class="section-title">Standards & RFCs</h2>
+    <p class="section-subtitle">Key documents that define how AES is used in various protocols and applications.</p>
+
+    <div class="rfc-grid">
+      @for (rfc of rfcDocuments; track rfc.number) {
+        <div class="rfc-card card">
+          <div class="rfc-header">
+            <span class="rfc-number">{{ rfc.number }}</span>
+            <span class="rfc-year">{{ rfc.year }}</span>
+          </div>
+          <h4>{{ rfc.title }}</h4>
+          <p>{{ rfc.description }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>

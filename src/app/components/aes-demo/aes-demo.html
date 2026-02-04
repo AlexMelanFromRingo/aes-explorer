@@ -1,0 +1,208 @@
+<div class="page-header">
+  <div class="container">
+    <span class="badge badge--purple">Interactive</span>
+    <h1>AES <span class="text-gradient">Encryption Demo</span></h1>
+    <p>Watch AES-128 encrypt your data step by step.</p>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div class="demo-layout">
+      <div class="demo-input-panel card card--static">
+        <h3>Input Configuration</h3>
+
+        <div class="input-mode-toggle">
+          <button
+            class="toggle-btn"
+            [class.toggle-btn--active]="inputMode() === 'text'"
+            (click)="inputMode.set('text')"
+          >
+            Text
+          </button>
+          <button
+            class="toggle-btn"
+            [class.toggle-btn--active]="inputMode() === 'hex'"
+            (click)="inputMode.set('hex')"
+          >
+            Hex
+          </button>
+        </div>
+
+        <div class="input-group">
+          <label>Plaintext (16 bytes max)</label>
+          <input
+            type="text"
+            [value]="plaintext()"
+            (input)="plaintext.set($any($event.target).value)"
+            [placeholder]="inputMode() === 'text' ? 'Enter text...' : '00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff'"
+          >
+          <span class="input-hint">{{ inputMode() === 'text' ? 'Will be converted to bytes (padded with zeros)' : 'Enter hex bytes separated by spaces' }}</span>
+        </div>
+
+        <div class="input-group">
+          <label>Key (16 bytes for AES-128)</label>
+          <input
+            type="text"
+            [value]="key()"
+            (input)="key.set($any($event.target).value)"
+            [placeholder]="inputMode() === 'text' ? 'Enter key...' : '2b 7e 15 16 28 ae d2 a6 ab f7 15 88 09 cf 4f 3c'"
+          >
+        </div>
+
+        <button class="btn btn--primary btn--full" (click)="encrypt()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          Encrypt
+        </button>
+
+        @if (encryptionResult()) {
+          <div class="result-summary">
+            <div class="result-row">
+              <span class="result-label">Plaintext (hex)</span>
+              <code class="result-value">{{ bytesToHexString(encryptionResult()!.plaintext) }}</code>
+            </div>
+            <div class="result-row">
+              <span class="result-label">Ciphertext (hex)</span>
+              <code class="result-value result-value--highlight">{{ bytesToHexString(encryptionResult()!.ciphertext) }}</code>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="demo-visualization">
+        @if (!encryptionResult()) {
+          <div class="demo-placeholder card card--static">
+            <div class="placeholder-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+            </div>
+            <h3>Ready to Encrypt</h3>
+            <p>Enter your plaintext and key, then click Encrypt to see the AES algorithm in action.</p>
+          </div>
+        } @else {
+          <div class="step-viewer card card--static">
+            <div class="step-header">
+              <div class="step-info">
+                <span class="step-badge" [attr.data-color]="getStepColor(currentStep()?.name || '')">
+                  Round {{ currentStep()?.round }}
+                </span>
+                <h3>{{ currentStep()?.name }}</h3>
+                <p>{{ currentStep()?.description }}</p>
+              </div>
+              <div class="step-counter">
+                {{ currentStepIndex() + 1 }} / {{ totalSteps() }}
+              </div>
+            </div>
+
+            <div class="progress">
+              <div class="progress__bar" [style.width.%]="progressPercent()"></div>
+            </div>
+
+            <div class="state-comparison">
+              <div class="state-box">
+                <div class="state-box__label">Before</div>
+                <div class="state-box__grid">
+                  @for (row of getStateForDisplay(currentStep()?.stateBefore || [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]); track $index) {
+                    <div class="state-box__row">
+                      @for (byte of row; track $index) {
+                        <div class="state-box__cell">{{ toHex(byte) }}</div>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div class="state-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </div>
+
+              <div class="state-box state-box--result">
+                <div class="state-box__label">After</div>
+                <div class="state-box__grid">
+                  @for (row of getStateForDisplay(currentStep()?.stateAfter || [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]); track $index) {
+                    <div class="state-box__row">
+                      @for (byte of row; track $index) {
+                        <div class="state-box__cell state-box__cell--changed">{{ toHex(byte) }}</div>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+
+              @if (currentStep()?.roundKey) {
+                <div class="state-box state-box--key">
+                  <div class="state-box__label">Round Key</div>
+                  <div class="state-box__grid">
+                    @for (row of getStateForDisplay(currentStep()?.roundKey || [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]); track $index) {
+                      <div class="state-box__row">
+                        @for (byte of row; track $index) {
+                          <div class="state-box__cell state-box__cell--key">{{ toHex(byte) }}</div>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+
+            <div class="step-controls">
+              <button class="btn btn--secondary btn--small" (click)="prevStep()" [disabled]="currentStepIndex() === 0">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                Previous
+              </button>
+
+              @if (isAnimating()) {
+                <button class="btn btn--secondary btn--small" (click)="stopAnimation()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="6" y="4" width="4" height="16"></rect>
+                    <rect x="14" y="4" width="4" height="16"></rect>
+                  </svg>
+                  Stop
+                </button>
+              } @else {
+                <button class="btn btn--primary btn--small" (click)="autoPlay()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                  Auto Play
+                </button>
+              }
+
+              <button class="btn btn--secondary btn--small" (click)="nextStep()" [disabled]="currentStepIndex() >= totalSteps() - 1">
+                Next
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="step-timeline">
+            <div class="timeline-scroll">
+              @for (step of encryptionResult()!.steps; track $index) {
+                <button
+                  class="timeline-step"
+                  [class.timeline-step--active]="$index === currentStepIndex()"
+                  [attr.data-color]="getStepColor(step.name)"
+                  (click)="goToStep($index)"
+                >
+                  <span class="timeline-step__round">R{{ step.round }}</span>
+                  <span class="timeline-step__name">{{ step.name.replace(' (Initial)', '').replace(' (Final)', '') }}</span>
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</section>

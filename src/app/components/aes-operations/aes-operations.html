@@ -1,0 +1,360 @@
+<div class="page-header">
+  <div class="container">
+    <span class="badge badge--green">Core Operations</span>
+    <h1>AES <span class="text-gradient">Transformations</span></h1>
+    <p>The four fundamental operations that make AES secure.</p>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div class="tabs">
+      <button
+        class="tabs__tab"
+        [class.tabs__tab--active]="activeTab() === 'subbytes'"
+        (click)="setTab('subbytes')"
+      >
+        SubBytes
+      </button>
+      <button
+        class="tabs__tab"
+        [class.tabs__tab--active]="activeTab() === 'shiftrows'"
+        (click)="setTab('shiftrows')"
+      >
+        ShiftRows
+      </button>
+      <button
+        class="tabs__tab"
+        [class.tabs__tab--active]="activeTab() === 'mixcolumns'"
+        (click)="setTab('mixcolumns')"
+      >
+        MixColumns
+      </button>
+      <button
+        class="tabs__tab"
+        [class.tabs__tab--active]="activeTab() === 'addroundkey'"
+        (click)="setTab('addroundkey')"
+      >
+        AddRoundKey
+      </button>
+    </div>
+
+    @if (activeTab() === 'subbytes') {
+      <div class="operation-content animate-fade-in">
+        <div class="operation-header">
+          <div class="operation-icon operation-icon--primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+          </div>
+          <div>
+            <h2>SubBytes Transformation</h2>
+            <p>Non-linear byte substitution using the S-Box lookup table</p>
+          </div>
+        </div>
+
+        <div class="operation-grid">
+          <div class="operation-explanation">
+            <h3>How It Works</h3>
+            <p>
+              SubBytes is a non-linear substitution step where each byte in the state is replaced with another according to a fixed 16x16 lookup table called the <strong>S-Box</strong>.
+            </p>
+            <p>
+              For a byte value, the upper nibble (4 bits) selects the row and the lower nibble selects the column. The value at that position becomes the output.
+            </p>
+
+            <div class="formula-box">
+              <div class="formula-box__title">Substitution Process</div>
+              <div class="formula-box__content mono">
+                Input: <span class="highlight-blue">0x{{ toHex(subBytesInput()) }}</span><br>
+                Row: <span class="highlight-green">{{ subBytesResult().row.toString(16).toUpperCase() }}</span> (upper nibble)<br>
+                Column: <span class="highlight-purple">{{ subBytesResult().col.toString(16).toUpperCase() }}</span> (lower nibble)<br>
+                Output: <span class="highlight-gold">0x{{ toHex(subBytesResult().output) }}</span>
+              </div>
+            </div>
+
+            <h4>Mathematical Basis</h4>
+            <p>The S-Box is constructed using two operations in GF(2<sup>8</sup>):</p>
+            <ol>
+              <li>Multiplicative inverse (0 maps to itself)</li>
+              <li>Affine transformation over GF(2)</li>
+            </ol>
+          </div>
+
+          <div class="operation-demo">
+            <h3>Interactive Demo</h3>
+            <div class="demo-input">
+              <label>Enter byte (hex):</label>
+              <input
+                type="text"
+                [value]="toHex(subBytesInput())"
+                (input)="updateSubBytesInput($event)"
+                maxlength="2"
+                class="hex-input"
+              >
+            </div>
+
+            <div class="demo-result">
+              <div class="demo-result__item">
+                <span class="demo-result__label">Input</span>
+                <span class="demo-result__value demo-result__value--blue">0x{{ toHex(subBytesInput()) }}</span>
+              </div>
+              <div class="demo-result__arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </div>
+              <div class="demo-result__item">
+                <span class="demo-result__label">Output</span>
+                <span class="demo-result__value demo-result__value--gold">0x{{ toHex(subBytesResult().output) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sbox-section">
+          <h3>Complete S-Box Table</h3>
+          <p>Find the intersection of row (upper nibble) and column (lower nibble)</p>
+          <div class="sbox-wrapper">
+            <table class="sbox-table">
+              <thead>
+                <tr>
+                  <th></th>
+                  @for (col of sBoxCols; track col) {
+                    <th [class.highlight-col]="col === subBytesResult().col">{{ col.toString(16).toUpperCase() }}</th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of sBoxRows; track row) {
+                  <tr>
+                    <th [class.highlight-row]="row === subBytesResult().row">{{ row.toString(16).toUpperCase() }}</th>
+                    @for (col of sBoxCols; track col) {
+                      <td [class.sbox-highlight]="isHighlightedSBox(row, col)">
+                        {{ getSBoxValue(row, col) }}
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (activeTab() === 'shiftrows') {
+      <div class="operation-content animate-fade-in">
+        <div class="operation-header">
+          <div class="operation-icon operation-icon--accent">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="17" y1="10" x2="3" y2="10"></line>
+              <polyline points="7 6 3 10 7 14"></polyline>
+            </svg>
+          </div>
+          <div>
+            <h2>ShiftRows Transformation</h2>
+            <p>Cyclical byte shifts for inter-column diffusion</p>
+          </div>
+        </div>
+
+        <div class="operation-grid">
+          <div class="operation-explanation">
+            <h3>How It Works</h3>
+            <p>ShiftRows cyclically shifts the bytes in each row of the state by a certain offset.</p>
+
+            <div class="shift-rules">
+              <div class="shift-rule" data-row="0">
+                <span class="shift-rule__row">Row 0</span>
+                <span class="shift-rule__shift">No shift</span>
+              </div>
+              <div class="shift-rule" data-row="1">
+                <span class="shift-rule__row">Row 1</span>
+                <span class="shift-rule__shift">Shift left by 1</span>
+              </div>
+              <div class="shift-rule" data-row="2">
+                <span class="shift-rule__row">Row 2</span>
+                <span class="shift-rule__shift">Shift left by 2</span>
+              </div>
+              <div class="shift-rule" data-row="3">
+                <span class="shift-rule__row">Row 3</span>
+                <span class="shift-rule__shift">Shift left by 3</span>
+              </div>
+            </div>
+
+            <h4>Purpose</h4>
+            <p>Without ShiftRows, each column would be encrypted independently. ShiftRows ensures full diffusion.</p>
+          </div>
+
+          <div class="operation-demo">
+            <h3>Visual Demonstration</h3>
+            <div class="shiftrows-demo">
+              <div class="shiftrows-state">
+                <div class="shiftrows-label">Before</div>
+                <div class="state-grid">
+                  @for (row of [0, 1, 2, 3]; track row) {
+                    <div class="state-row" [attr.data-row]="row">
+                      @for (col of [0, 1, 2, 3]; track col) {
+                        <div class="state-cell">{{ toHex(shiftRowsState()[row][col]) }}</div>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div class="shiftrows-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </div>
+
+              <div class="shiftrows-state">
+                <div class="shiftrows-label">After</div>
+                <div class="state-grid state-grid--result">
+                  @for (row of [0, 1, 2, 3]; track row) {
+                    <div class="state-row" [attr.data-row]="row">
+                      @for (col of [0, 1, 2, 3]; track col) {
+                        <div class="state-cell">{{ toHex(shiftRowsResult()[row][col]) }}</div>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (activeTab() === 'mixcolumns') {
+      <div class="operation-content animate-fade-in">
+        <div class="operation-header">
+          <div class="operation-icon operation-icon--purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M8 12h8M12 8v8"></path>
+            </svg>
+          </div>
+          <div>
+            <h2>MixColumns Transformation</h2>
+            <p>Matrix multiplication in Galois Field GF(2<sup>8</sup>)</p>
+          </div>
+        </div>
+
+        <div class="operation-grid">
+          <div class="operation-explanation">
+            <h3>How It Works</h3>
+            <p>MixColumns treats each column as a polynomial over GF(2<sup>8</sup>) and multiplies it with a fixed matrix:</p>
+
+            <div class="matrix-display">
+              <div class="matrix-bracket">[</div>
+              <div class="matrix-content">
+                <div class="matrix-row"><span>02</span><span>03</span><span>01</span><span>01</span></div>
+                <div class="matrix-row"><span>01</span><span>02</span><span>03</span><span>01</span></div>
+                <div class="matrix-row"><span>01</span><span>01</span><span>02</span><span>03</span></div>
+                <div class="matrix-row"><span>03</span><span>01</span><span>01</span><span>02</span></div>
+              </div>
+              <div class="matrix-bracket">]</div>
+            </div>
+
+            <h4>Galois Field Arithmetic</h4>
+            <p>Multiplication by 02 is a left shift with conditional XOR of 0x1B. Multiplication by 03 is multiplication by 02 followed by XOR with the original value.</p>
+          </div>
+
+          <div class="operation-demo">
+            <h3>Column Transformation</h3>
+            <div class="mixcol-demo">
+              <div class="mixcol-input">
+                <div class="mixcol-label">Input Column</div>
+                <div class="mixcol-column">
+                  @for (byte of mixColumnInput(); track $index) {
+                    <div class="mixcol-byte">{{ toHex(byte) }}</div>
+                  }
+                </div>
+              </div>
+
+              <div class="mixcol-equals">=</div>
+
+              <div class="mixcol-output">
+                <div class="mixcol-label">Output Column</div>
+                <div class="mixcol-column mixcol-column--result">
+                  @for (byte of mixColumnResult().output; track $index) {
+                    <div class="mixcol-byte">{{ toHex(byte) }}</div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (activeTab() === 'addroundkey') {
+      <div class="operation-content animate-fade-in">
+        <div class="operation-header">
+          <div class="operation-icon operation-icon--gold">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+            </svg>
+          </div>
+          <div>
+            <h2>AddRoundKey Transformation</h2>
+            <p>XOR the state with the round key derived from the cipher key</p>
+          </div>
+        </div>
+
+        <div class="operation-grid">
+          <div class="operation-explanation">
+            <h3>How It Works</h3>
+            <p>Each byte of the state is XORed with the corresponding byte of the round key.</p>
+
+            <div class="formula-box">
+              <div class="formula-box__title">XOR Operation</div>
+              <div class="formula-box__content mono">
+                State[i,j] = State[i,j] XOR RoundKey[i,j]
+              </div>
+            </div>
+
+            <h4>Why XOR?</h4>
+            <ul class="feature-list">
+              <li><strong>Self-inverse:</strong> A XOR B XOR B = A</li>
+              <li><strong>No information loss:</strong> XOR is bijective</li>
+              <li><strong>Fast:</strong> Single CPU instruction</li>
+              <li><strong>Key mixing:</strong> Introduces key material</li>
+            </ul>
+          </div>
+
+          <div class="operation-demo">
+            <h3>XOR Visualization</h3>
+            <div class="xor-demo">
+              <div class="xor-operand">
+                <div class="xor-label">State</div>
+                <div class="xor-grid">
+                  @for (byte of xorStateBytes; track $index) {
+                    <div class="xor-byte">{{ toHex(byte) }}</div>
+                  }
+                </div>
+              </div>
+
+              <div class="xor-operator">XOR</div>
+
+              <div class="xor-operand">
+                <div class="xor-label">Round Key</div>
+                <div class="xor-grid">
+                  @for (byte of xorKeyBytes; track $index) {
+                    <div class="xor-byte xor-byte--key">{{ toHex(byte) }}</div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</section>

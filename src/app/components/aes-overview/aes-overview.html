@@ -1,0 +1,213 @@
+<div class="page-header">
+  <div class="container">
+    <span class="badge">Algorithm Overview</span>
+    <h1>Understanding <span class="text-gradient">AES</span></h1>
+    <p>Advanced Encryption Standard - the symmetric block cipher that secures our digital world.</p>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div class="content-grid">
+      <div class="content-main">
+        <article class="article">
+          <h2>What is AES?</h2>
+          <p>
+            The <strong>Advanced Encryption Standard (AES)</strong> is a symmetric block cipher chosen by the U.S. National Institute of Standards and Technology (NIST) in 2001. It replaced the aging DES (Data Encryption Standard) and has become the most widely used encryption algorithm in the world.
+          </p>
+          <p>
+            AES is based on the <strong>Rijndael cipher</strong>, designed by Belgian cryptographers Joan Daemen and Vincent Rijmen. The algorithm was selected after a rigorous five-year standardization process that evaluated 15 competing designs.
+          </p>
+
+          <div class="info-box">
+            <div class="info-box__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            </div>
+            <div class="info-box__content">
+              <strong>Symmetric Encryption</strong>
+              <p>AES uses the same key for both encryption and decryption. This differs from asymmetric algorithms like RSA, which use separate public and private keys.</p>
+            </div>
+          </div>
+
+          <h2>Block Cipher Structure</h2>
+          <p>
+            AES operates on fixed-size blocks of 128 bits (16 bytes). The data is arranged in a 4x4 matrix of bytes called the <strong>State</strong>. Each byte in the state can be represented as a value from 0 to 255 (0x00 to 0xFF in hexadecimal).
+          </p>
+
+          <div class="state-visual">
+            <div class="state-matrix">
+              <div class="state-matrix__label">Input Block (16 bytes)</div>
+              <div class="state-matrix__grid">
+                @for (row of [0, 1, 2, 3]; track row) {
+                  @for (col of [0, 1, 2, 3]; track col) {
+                    <div class="state-matrix__cell">
+                      <span class="state-matrix__index">{{ row + col * 4 }}</span>
+                    </div>
+                  }
+                }
+              </div>
+              <div class="state-matrix__note">Bytes are filled column by column</div>
+            </div>
+
+            <div class="state-arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </div>
+
+            <div class="state-matrix">
+              <div class="state-matrix__label">State Matrix</div>
+              <div class="state-matrix__grid state-matrix__grid--colored">
+                @for (row of [0, 1, 2, 3]; track row) {
+                  @for (col of [0, 1, 2, 3]; track col) {
+                    <div class="state-matrix__cell" [attr.data-row]="row">
+                      S<sub>{{ row }},{{ col }}</sub>
+                    </div>
+                  }
+                }
+              </div>
+              <div class="state-matrix__note">4 rows x 4 columns</div>
+            </div>
+          </div>
+
+          <h2>Key Sizes and Rounds</h2>
+          <p>
+            AES supports three key lengths, each requiring a different number of encryption rounds:
+          </p>
+
+          <div class="key-table">
+            <div class="key-table__header">
+              <span>Key Size</span>
+              <span>Rounds</span>
+              <span>Security Level</span>
+            </div>
+            @for (variant of keyVariants; track variant.bits) {
+              <div class="key-table__row">
+                <span class="key-table__bits">
+                  <strong>{{ variant.bits }}-bit</strong>
+                </span>
+                <span class="key-table__rounds">{{ variant.rounds }} rounds</span>
+                <span class="key-table__security">
+                  @if (variant.bits === 128) {
+                    <span class="badge badge--green">Standard</span>
+                  } @else if (variant.bits === 192) {
+                    <span class="badge badge--gold">High</span>
+                  } @else {
+                    <span class="badge badge--purple">Maximum</span>
+                  }
+                </span>
+              </div>
+            }
+          </div>
+
+          <h2>Encryption Process</h2>
+          <p>
+            Each round of AES consists of four transformations applied to the state matrix. The final round omits the MixColumns step.
+          </p>
+
+          <div class="round-flow">
+            <div class="round-flow__start">
+              <span>Plaintext</span>
+            </div>
+
+            <div class="round-flow__step round-flow__step--initial">
+              <span>Initial AddRoundKey</span>
+            </div>
+
+            <div class="round-flow__rounds">
+              <div class="round-flow__round">
+                <span class="round-flow__round-label">Rounds 1-9</span>
+                <div class="round-flow__operations">
+                  @for (op of roundOperations; track op.name) {
+                    <div class="round-flow__op" [attr.data-color]="op.color">
+                      {{ op.name }}
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div class="round-flow__step round-flow__step--final">
+              <span>Final Round (no MixColumns)</span>
+            </div>
+
+            <div class="round-flow__end">
+              <span>Ciphertext</span>
+            </div>
+          </div>
+
+          <h2>Security Properties</h2>
+          <p>AES achieves its security through two fundamental cryptographic properties:</p>
+
+          <div class="grid grid--2">
+            <div class="property-card card">
+              <h4>Confusion</h4>
+              <p>Each bit of the ciphertext depends on multiple bits of the key. The S-Box substitution creates complex, non-linear relationships between input and output.</p>
+            </div>
+            <div class="property-card card">
+              <h4>Diffusion</h4>
+              <p>Each bit of plaintext influences many bits of ciphertext. ShiftRows and MixColumns spread changes across the entire state matrix.</p>
+            </div>
+          </div>
+
+          <div class="next-section">
+            <p>Ready to dive deeper?</p>
+            <a routerLink="/operations" class="btn btn--primary">
+              Explore Operations
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </a>
+          </div>
+        </article>
+      </div>
+
+      <aside class="content-sidebar">
+        <div class="sidebar-card card card--static">
+          <h4>Quick Facts</h4>
+          <ul class="fact-list">
+            <li>
+              <span class="fact-list__label">Standard</span>
+              <span class="fact-list__value">FIPS 197</span>
+            </li>
+            <li>
+              <span class="fact-list__label">Block Size</span>
+              <span class="fact-list__value">128 bits</span>
+            </li>
+            <li>
+              <span class="fact-list__label">Key Sizes</span>
+              <span class="fact-list__value">128/192/256 bits</span>
+            </li>
+            <li>
+              <span class="fact-list__label">Structure</span>
+              <span class="fact-list__value">Substitution-Permutation</span>
+            </li>
+            <li>
+              <span class="fact-list__label">Adopted</span>
+              <span class="fact-list__value">2001</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="sidebar-card card card--static">
+          <h4>Where AES is Used</h4>
+          <ul class="usage-list">
+            <li>HTTPS/TLS encryption</li>
+            <li>WiFi (WPA2/WPA3)</li>
+            <li>File encryption</li>
+            <li>VPNs</li>
+            <li>Disk encryption</li>
+            <li>Secure messaging apps</li>
+            <li>Government communications</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
