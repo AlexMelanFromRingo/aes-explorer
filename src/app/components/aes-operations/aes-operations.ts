@@ -9,7 +9,7 @@ import { AesService } from '../../services/aes';
   styleUrl: './aes-operations.scss',
 })
 export class AesOperations {
-  activeTab = signal<'subbytes' | 'shiftrows' | 'mixcolumns' | 'addroundkey'>('subbytes');
+  activeTab = signal<'subbytes' | 'shiftrows' | 'mixcolumns' | 'addroundkey' | 'keyexpansion'>('subbytes');
 
   // SubBytes demo
   subBytesInput = signal(0x53);
@@ -54,10 +54,31 @@ export class AesOperations {
   xorStateBytes = [0x32, 0x88, 0x31, 0xe0, 0x43, 0x5a, 0x31, 0x37, 0xf6, 0x30, 0x98, 0x07, 0xa8, 0x8d, 0xa2, 0x34];
   xorKeyBytes = [0x2b, 0x28, 0xab, 0x09, 0x7e, 0xae, 0xf7, 0xcf, 0x15, 0xd2, 0x15, 0x4f, 0x16, 0xa6, 0x88, 0x3c];
 
+  // Key Expansion demo
+  demoKey = [0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c];
+  expandedKeyDemo = computed(() => this.aes.expandKey(this.demoKey));
+  selectedRound = signal(0);
+
+  // Round constants for display
+  rconValues = [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36];
+
   constructor(public aes: AesService) {}
 
-  setTab(tab: 'subbytes' | 'shiftrows' | 'mixcolumns' | 'addroundkey') {
+  setTab(tab: 'subbytes' | 'shiftrows' | 'mixcolumns' | 'addroundkey' | 'keyexpansion') {
     this.activeTab.set(tab);
+  }
+
+  setSelectedRound(round: number) {
+    this.selectedRound.set(round);
+  }
+
+  getWordHex(word: number[]): string {
+    return word.map(b => this.toHex(b)).join(' ');
+  }
+
+  getRoundKeyWords(round: number): number[][] {
+    const expanded = this.expandedKeyDemo();
+    return expanded.slice(round * 4, round * 4 + 4);
   }
 
   updateSubBytesInput(event: Event) {

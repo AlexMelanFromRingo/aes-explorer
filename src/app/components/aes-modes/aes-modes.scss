@@ -101,6 +101,17 @@
 
 .mode-detail {
   padding: 2rem;
+
+  @media (max-width: 480px) {
+    padding: 1.25rem;
+  }
+}
+
+.mode-diagram {
+  @media (max-width: 480px) {
+    padding: 1rem;
+    overflow-x: auto;
+  }
 }
 
 .mode-header {
@@ -149,6 +160,11 @@
   align-items: center;
   gap: 1rem;
   margin-bottom: 1rem;
+  flex-wrap: wrap;
+
+  @media (max-width: 480px) {
+    gap: 0.5rem;
+  }
 }
 
 .diagram-block {
@@ -157,6 +173,11 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.875rem;
   font-weight: 600;
+
+  @media (max-width: 480px) {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+  }
 
   &--plain {
     background: rgba(59, 130, 246, 0.2);

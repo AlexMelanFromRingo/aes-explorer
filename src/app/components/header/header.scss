@@ -60,11 +60,13 @@
       flex-direction: column;
       align-items: stretch;
       padding: 1rem;
-      background: rgba(15, 23, 42, 0.98);
-      backdrop-filter: blur(12px);
+      background: #0f172a;
+      backdrop-filter: none;
       transform: translateX(100%);
       transition: transform 0.3s ease;
       gap: 0.5rem;
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+      overflow-y: auto;
 
       &--open {
         transform: translateX(0);
@@ -92,9 +94,22 @@
     }
 
     @media (max-width: 768px) {
-      padding: 1rem;
+      padding: 1rem 1.25rem;
       font-size: 1.125rem;
       border-radius: var(--border-radius);
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--gray-200);
+
+      &:hover {
+        background: rgba(59, 130, 246, 0.15);
+        border-color: rgba(59, 130, 246, 0.3);
+      }
+
+      &--active {
+        background: rgba(59, 130, 246, 0.2);
+        border-color: rgba(59, 130, 246, 0.4);
+      }
     }
   }
 
