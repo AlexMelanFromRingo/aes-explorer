@@ -83,31 +83,31 @@
               </div>
             </div>
 
-            <h4>Почему именно такая таблица подстановки?</h4>
+            <h4>Why this specific substitution table?</h4>
             <p>
-              S-Box в AES — это <em>не случайная таблица</em>. Она математически сконструирована для максимальной криптостойкости. Процесс создания S-Box состоит из двух шагов:
+              The AES S-Box is <em>not a random table</em>. It is mathematically constructed for maximum cryptographic strength. The S-Box is built in two steps:
             </p>
 
-            <h4>Шаг 1: Мультипликативный обратный в GF(2⁸)</h4>
+            <h4>Step 1: Multiplicative inverse in GF(2⁸)</h4>
             <p>
-              Для каждого байта b вычисляется его обратный элемент b⁻¹ в поле Галуа GF(2⁸), так что b × b⁻¹ = 1. Ноль отображается в ноль (у нуля нет обратного).
-              Это даёт <strong>максимальную нелинейность</strong> — функция обращения в конечном поле имеет наилучшие характеристики стойкости к дифференциальному и линейному криптоанализу.
+              For each byte b, compute its multiplicative inverse b⁻¹ in the Galois field GF(2⁸), such that b × b⁻¹ = 1. Zero maps to zero (it has no inverse).
+              This provides <strong>maximum non-linearity</strong> — the inversion function over a finite field has the best resistance characteristics against differential and linear cryptanalysis.
             </p>
 
-            <h4>Шаг 2: Аффинное преобразование</h4>
+            <h4>Step 2: Affine transformation</h4>
             <p>
-              Результат инверсии пропускается через аффинное (линейное + сдвиг) преобразование над GF(2). Это устраняет фиксированные точки (байты, которые отображались бы сами в себя) и делает S-Box несимметричным. Без аффинного преобразования S-Box имел бы алгебраическую структуру, которую можно было бы использовать для атак.
+              The inversion result is passed through an affine (linear + shift) transformation over GF(2). This eliminates fixed points (bytes that would map to themselves) and makes the S-Box asymmetric. Without the affine transform, the S-Box would have algebraic structure exploitable by attacks.
             </p>
 
-            <h4>Почему не случайная таблица?</h4>
+            <h4>Why not a random table?</h4>
             <p>
-              Случайная таблица может иметь слабые места: линейные приближения, дифференциальные характеристики с высокой вероятностью, фиксированные точки. Математическая конструкция S-Box AES <strong>доказуемо</strong> обеспечивает:
+              A random table may have weaknesses: linear approximations, high-probability differential characteristics, fixed points. The AES S-Box construction <strong>provably</strong> guarantees:
             </p>
             <ul>
-              <li>Максимальную нелинейность (112 из 120 возможных)</li>
-              <li>Низкую дифференциальную равномерность (= 4)</li>
-              <li>Отсутствие фиксированных точек (S(x) ≠ x для всех x)</li>
-              <li>Отсутствие обратных фиксированных точек (S(x) ≠ x̄ для всех x)</li>
+              <li>Maximum non-linearity (112 out of 120 possible)</li>
+              <li>Low differential uniformity (= 4)</li>
+              <li>No fixed points (S(x) ≠ x for all x)</li>
+              <li>No opposite fixed points (S(x) ≠ x̄ for all x)</li>
             </ul>
           </div>
 
@@ -117,8 +117,9 @@
               <label>Enter byte (hex):</label>
               <input
                 type="text"
-                [value]="toHex(subBytesInput())"
+                [value]="subBytesInputText()"
                 (input)="updateSubBytesInput($event)"
+                (blur)="formatSubBytesInput()"
                 maxlength="2"
                 class="hex-input"
               >
@@ -213,20 +214,20 @@
               </div>
             </div>
 
-            <h4>Зачем нужен ShiftRows?</h4>
+            <h4>Why is ShiftRows needed?</h4>
             <p>
-              Без ShiftRows каждый столбец матрицы шифровался бы <em>независимо</em> от остальных. MixColumns работает внутри одного столбца, SubBytes работает с каждым байтом отдельно. Только ShiftRows перемешивает байты <strong>между столбцами</strong>.
+              Without ShiftRows, each column of the matrix would be encrypted <em>independently</em> from the others. MixColumns operates within a single column, SubBytes operates on each byte individually. Only ShiftRows mixes bytes <strong>between columns</strong>.
             </p>
             <p>
-              Вместе ShiftRows и MixColumns обеспечивают полную диффузию за 2 раунда: изменение одного байта входа затрагивает все 16 байт выхода.
+              Together, ShiftRows and MixColumns achieve full diffusion in 2 rounds: changing one input byte affects all 16 output bytes.
             </p>
 
-            <h4>Почему именно такие сдвиги (0, 1, 2, 3)?</h4>
+            <h4>Why exactly these shift amounts (0, 1, 2, 3)?</h4>
             <p>
-              Сдвиги выбраны так, чтобы каждый байт столбца после ShiftRows попадал в <strong>разные столбцы</strong>. Если бы все строки сдвигались одинаково — это был бы просто поворот столбцов, не дающий межстолбцовой диффузии.
+              The shifts are chosen so that each byte of a column ends up in a <strong>different column</strong> after ShiftRows. If all rows were shifted by the same amount, it would just be a column rotation with no inter-column diffusion.
             </p>
             <p>
-              Значения 0, 1, 2, 3 — единственный набор, при котором 4 байта из одного столбца после сдвига оказываются в 4 <em>разных</em> столбцах. Это максимизирует скорость диффузии и является частью «Wide Trail Strategy» — стратегии проектирования, которую авторы Rijndael использовали для доказуемой стойкости.
+              The values 0, 1, 2, 3 are the only set where 4 bytes from one column land in 4 <em>different</em> columns after shifting. This maximizes diffusion speed and is part of the "Wide Trail Strategy" — the design approach Rijndael's authors used for provable security.
             </p>
           </div>
 
@@ -302,25 +303,25 @@
               <div class="matrix-bracket">]</div>
             </div>
 
-            <h4>Почему именно эта матрица?</h4>
+            <h4>Why this specific matrix?</h4>
             <p>
-              Матрица MixColumns — это <strong>MDS-матрица</strong> (Maximum Distance Separable) над GF(2⁸). Это означает, что она обеспечивает максимальную диффузию: если на входе отличается хотя бы один байт, на выходе будут отличаться <em>все четыре</em> байта.
+              The MixColumns matrix is an <strong>MDS matrix</strong> (Maximum Distance Separable) over GF(2⁸). This means it provides maximum diffusion: if at least one input byte differs, <em>all four</em> output bytes will differ.
             </p>
             <p>
-              Коэффициенты 01, 02, 03 выбраны не случайно — это самые маленькие ненулевые элементы GF(2⁸), для которых умножение реализуется максимально эффективно:
+              The coefficients 01, 02, 03 were not chosen randomly — they are the smallest non-zero elements of GF(2⁸) for which multiplication is maximally efficient:
             </p>
             <ul>
-              <li><strong>×01</strong> — тождественная операция (ничего не делать)</li>
-              <li><strong>×02</strong> — сдвиг влево на 1 бит + условный XOR с 0x1B (если старший бит = 1). Это как умножение на x в полиноме по модулю</li>
-              <li><strong>×03</strong> — это ×02 XOR ×01, то есть (сдвиг + условный XOR) XOR исходное значение</li>
+              <li><strong>×01</strong> — identity operation (do nothing)</li>
+              <li><strong>×02</strong> — left shift by 1 bit + conditional XOR with 0x1B (if high bit = 1). This is multiplication by x in the polynomial modulo the irreducible polynomial</li>
+              <li><strong>×03</strong> — equals ×02 XOR ×01, i.e. (shift + conditional XOR) XOR original value</li>
             </ul>
 
-            <h4>Почему GF(2⁸), а не обычная арифметика?</h4>
+            <h4>Why GF(2⁸) instead of normal arithmetic?</h4>
             <p>
-              В обычной арифметике умножение выходит за пределы байта (255 × 255 = 65025). В GF(2⁸) результат <em>всегда</em> помещается в 1 байт, и каждая операция обратима. Сложение — это XOR (нет переполнений, нет знака), умножение — полиномиальное по модулю неприводимого полинома.
+              In normal arithmetic, multiplication overflows a byte (255 × 255 = 65,025). In GF(2⁸), the result <em>always</em> fits in 1 byte, and every operation is invertible. Addition is XOR (no overflow, no sign), multiplication is polynomial modulo the irreducible polynomial.
             </p>
             <p>
-              Это делает AES алгебраически элегантным: все операции определены в одном поле, все обратимы, и всё эффективно реализуется в аппаратуре.
+              This makes AES algebraically elegant: all operations are defined in one field, all are invertible, and everything can be implemented efficiently in hardware.
             </p>
           </div>
 
@@ -378,18 +379,18 @@
               </div>
             </div>
 
-            <h4>Почему именно XOR?</h4>
+            <h4>Why XOR specifically?</h4>
             <ul class="feature-list">
-              <li><strong>Самообратимость:</strong> A XOR B XOR B = A. Это значит, что для расшифровки используется та же операция — AddRoundKey одинаков при шифровании и расшифровании</li>
-              <li><strong>Биективность:</strong> XOR не теряет информацию. Для любого ключа K функция f(x) = x XOR K является биекцией (взаимно-однозначным отображением)</li>
-              <li><strong>Скорость:</strong> Одна машинная инструкция на процессоре. XOR 128 бит — одна операция на SIMD-регистрах</li>
-              <li><strong>В GF(2⁸) XOR = сложение:</strong> XOR — это сложение в поле Галуа GF(2⁸). Поэтому AddRoundKey — это сложение состояния с ключом в алгебраическом смысле</li>
+              <li><strong>Self-inverse:</strong> A XOR B XOR B = A. This means decryption uses the same operation — AddRoundKey is identical for encryption and decryption</li>
+              <li><strong>Bijective:</strong> XOR loses no information. For any key K, the function f(x) = x XOR K is a bijection (one-to-one mapping)</li>
+              <li><strong>Fast:</strong> A single CPU instruction. XOR of 128 bits is one operation on SIMD registers</li>
+              <li><strong>In GF(2⁸), XOR = addition:</strong> XOR is addition in the Galois field GF(2⁸). So AddRoundKey is algebraically the addition of state and key</li>
             </ul>
 
-            <h4>Почему AddRoundKey стоит и первой, и последней?</h4>
+            <h4>Why is AddRoundKey both first and last?</h4>
             <p>
-              AES начинается и заканчивается AddRoundKey. Это не случайно: без начального AddRoundKey первый SubBytes был бы одинаковым для всех ключей (от ключа ничего не зависит).
-              А без финального AddRoundKey последний раунд можно было бы «отмотать» без знания ключа. Таким образом, ключевой материал «обрамляет» все раунды, делая шифр стойким даже при атаках на крайние раунды.
+              AES begins and ends with AddRoundKey. This is deliberate: without the initial AddRoundKey, the first SubBytes would be identical for all keys (nothing depends on the key).
+              Without the final AddRoundKey, the last round could be "unwound" without knowing the key. Thus, key material "wraps" all rounds, making the cipher secure even against attacks targeting the outer rounds.
             </p>
           </div>
 
@@ -431,17 +432,17 @@
           </div>
           <div>
             <h2>Key Expansion (Key Schedule)</h2>
-            <p>Генерация раундовых ключей из исходного 128-битного ключа</p>
+            <p>Generating round keys from the original 128-bit cipher key</p>
           </div>
         </div>
 
         <div class="key-expansion-content">
           <div class="key-expansion-intro">
-            <h3>Зачем нужно расширение ключа?</h3>
+            <h3>Why is Key Expansion needed?</h3>
             <p>
-              AES-128 выполняет <strong>10 раундов</strong> шифрования, и в каждом раунде используется свой
-              <strong>раундовый ключ</strong>. Плюс ещё один ключ для начальной операции AddRoundKey.
-              Итого нужно <strong>11 раундовых ключей</strong> (176 байт) из одного 128-битного (16 байт) исходного ключа.
+              AES-128 performs <strong>10 rounds</strong> of encryption, and each round uses its own
+              <strong>round key</strong>. Plus one more key for the initial AddRoundKey operation.
+              That means <strong>11 round keys</strong> (176 bytes) must be derived from a single 128-bit (16 byte) cipher key.
             </p>
 
             <div class="info-box info-box--highlight">
@@ -451,24 +452,24 @@
                 </svg>
               </div>
               <div class="info-box__content">
-                <strong>Почему это важно для безопасности?</strong>
-                <p>Расширение ключа гарантирует, что каждый раунд использует уникальный ключевой материал.
-                Это предотвращает атаки, основанные на повторном использовании одного и того же ключа.</p>
+                <strong>Why is this important for security?</strong>
+                <p>Key expansion ensures that each round uses unique key material.
+                This prevents attacks based on reusing the same key across rounds.</p>
               </div>
             </div>
           </div>
 
           <div class="key-expansion-algorithm">
-            <h3>Алгоритм расширения ключа</h3>
+            <h3>Key Expansion Algorithm</h3>
 
             <div class="algorithm-steps">
               <div class="algorithm-step">
                 <div class="step-number">1</div>
                 <div class="step-content">
-                  <h4>Исходный ключ → Слова W[0..3]</h4>
-                  <p>16-байтный ключ разбивается на 4 <strong>слова (word)</strong> по 4 байта каждое.</p>
+                  <h4>Original Key → Words W[0..3]</h4>
+                  <p>The 16-byte key is split into 4 <strong>words</strong> of 4 bytes each.</p>
                   <div class="code-example">
-                    <span class="code-label">Ключ:</span>
+                    <span class="code-label">Key:</span>
                     <code>{{ getWordHex(getRoundKeyWords(0)[0]) }} | {{ getWordHex(getRoundKeyWords(0)[1]) }} | {{ getWordHex(getRoundKeyWords(0)[2]) }} | {{ getWordHex(getRoundKeyWords(0)[3]) }}</code>
                     <span class="code-annotation">W[0], W[1], W[2], W[3]</span>
                   </div>
@@ -478,8 +479,8 @@
               <div class="algorithm-step">
                 <div class="step-number">2</div>
                 <div class="step-content">
-                  <h4>Генерация новых слов W[4..43]</h4>
-                  <p>Каждое новое слово W[i] вычисляется по формуле:</p>
+                  <h4>Generating new words W[4..43]</h4>
+                  <p>Each new word W[i] is computed using the formula:</p>
                   <div class="formula-box">
                     <div class="formula-box__content mono">
                       @if (true) {
@@ -487,20 +488,20 @@
                       }
                     </div>
                   </div>
-                  <p>Где <code>temp</code> зависит от позиции i:</p>
+                  <p>Where <code>temp</code> depends on position i:</p>
                 </div>
               </div>
 
               <div class="algorithm-step">
                 <div class="step-number">3</div>
                 <div class="step-content">
-                  <h4>Для каждого 4-го слова (i mod 4 = 0)</h4>
-                  <p>Применяются три операции к предыдущему слову W[i-1]:</p>
+                  <h4>For every 4th word (i mod 4 = 0)</h4>
+                  <p>Three operations are applied to the previous word W[i-1]:</p>
 
                   <div class="sub-operations">
                     <div class="sub-operation">
                       <span class="sub-op-name">RotWord</span>
-                      <span class="sub-op-desc">Циклический сдвиг байтов влево на 1 позицию</span>
+                      <span class="sub-op-desc">Cyclic left shift of bytes by 1 position</span>
                       <div class="sub-op-example">
                         <code>[a, b, c, d] → [b, c, d, a]</code>
                       </div>
@@ -508,15 +509,15 @@
 
                     <div class="sub-operation">
                       <span class="sub-op-name">SubWord</span>
-                      <span class="sub-op-desc">Замена каждого байта через S-Box</span>
+                      <span class="sub-op-desc">Substitute each byte through the S-Box</span>
                       <div class="sub-op-example">
                         <code>[b, c, d, a] → [S(b), S(c), S(d), S(a)]</code>
                       </div>
                     </div>
 
                     <div class="sub-operation">
-                      <span class="sub-op-name">XOR с Rcon</span>
-                      <span class="sub-op-desc">XOR первого байта с раундовой константой</span>
+                      <span class="sub-op-name">XOR with Rcon</span>
+                      <span class="sub-op-desc">XOR the first byte with the round constant</span>
                       <div class="sub-op-example">
                         <code>temp[0] = temp[0] XOR Rcon[round]</code>
                       </div>
@@ -528,8 +529,8 @@
               <div class="algorithm-step">
                 <div class="step-number">4</div>
                 <div class="step-content">
-                  <h4>Раундовые константы (Rcon)</h4>
-                  <p>Предотвращают симметрию в расширении ключа:</p>
+                  <h4>Round Constants (Rcon)</h4>
+                  <p>Prevent symmetry in key expansion:</p>
                   <div class="rcon-table">
                     @for (i of [1,2,3,4,5,6,7,8,9,10]; track i) {
                       <div class="rcon-item">
@@ -538,15 +539,15 @@
                       </div>
                     }
                   </div>
-                  <p class="rcon-note">Rcon вычисляется как степени 2 в поле Галуа GF(2⁸)</p>
+                  <p class="rcon-note">Rcon values are powers of 2 in the Galois field GF(2⁸)</p>
                 </div>
               </div>
             </div>
           </div>
 
           <div class="key-expansion-demo">
-            <h3>Интерактивная демонстрация</h3>
-            <p>Выберите раунд, чтобы увидеть соответствующий раундовый ключ:</p>
+            <h3>Interactive Demo</h3>
+            <p>Select a round to see its corresponding round key:</p>
 
             <div class="round-selector">
               @for (round of [0,1,2,3,4,5,6,7,8,9,10]; track round) {
@@ -568,12 +569,12 @@
               <div class="key-display-header">
                 <span class="key-display-title">
                   @if (selectedRound() === 0) {
-                    Исходный ключ (Initial Round Key)
+                    Initial Round Key (Original Key)
                   } @else {
-                    Раундовый ключ {{ selectedRound() }}
+                    Round Key {{ selectedRound() }}
                   }
                 </span>
-                <span class="key-display-words">Слова W[{{ selectedRound() * 4 }}] - W[{{ selectedRound() * 4 + 3 }}]</span>
+                <span class="key-display-words">Words W[{{ selectedRound() * 4 }}] - W[{{ selectedRound() * 4 + 3 }}]</span>
               </div>
 
               <div class="key-words-grid">
@@ -590,7 +591,7 @@
               </div>
 
               <div class="key-as-matrix">
-                <div class="matrix-label">Как матрица 4×4 (для AddRoundKey):</div>
+                <div class="matrix-label">As a 4×4 matrix (for AddRoundKey):</div>
                 <div class="key-matrix">
                   @for (row of [0,1,2,3]; track row) {
                     <div class="key-matrix-row">
@@ -605,10 +606,10 @@
           </div>
 
           <div class="key-expansion-visual">
-            <h3>Визуализация процесса</h3>
+            <h3>Process Visualization</h3>
             <div class="expansion-flow">
               <div class="flow-block flow-block--key">
-                <div class="flow-label">Исходный ключ</div>
+                <div class="flow-label">Original Key</div>
                 <div class="flow-content">
                   <code>{{ getWordHex(demoKey.slice(0, 4)) }}</code>
                   <code>{{ getWordHex(demoKey.slice(4, 8)) }}</code>
@@ -626,7 +627,7 @@
               </div>
 
               <div class="flow-block flow-block--expanded">
-                <div class="flow-label">44 слова (176 байт)</div>
+                <div class="flow-label">44 words (176 bytes)</div>
                 <div class="flow-grid">
                   @for (round of [0,1,2,3,4,5,6,7,8,9,10]; track round) {
                     <div class="flow-round" [class.flow-round--active]="selectedRound() === round">
@@ -639,19 +640,19 @@
           </div>
 
           <div class="security-note">
-            <h4>Криптографические свойства</h4>
+            <h4>Cryptographic Properties</h4>
             <ul class="property-list">
               <li>
-                <strong>Нелинейность:</strong> S-Box вносит нелинейность, защищая от линейного криптоанализа
+                <strong>Non-linearity:</strong> The S-Box introduces non-linearity, protecting against linear cryptanalysis
               </li>
               <li>
-                <strong>Диффузия:</strong> Изменение одного бита ключа влияет на все раундовые ключи
+                <strong>Diffusion:</strong> Changing one bit of the key affects all round keys
               </li>
               <li>
-                <strong>Асимметрия:</strong> Rcon предотвращает одинаковые раундовые ключи
+                <strong>Asymmetry:</strong> Rcon prevents identical round keys from being generated
               </li>
               <li>
-                <strong>Необратимость:</strong> Невозможно восстановить исходный ключ из одного раундового
+                <strong>Irreversibility:</strong> It is impossible to recover the original key from a single round key
               </li>
             </ul>
           </div>

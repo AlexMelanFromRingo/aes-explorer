@@ -13,6 +13,7 @@ export class AesOperations {
 
   // SubBytes demo
   subBytesInput = signal(0x53);
+  subBytesInputText = signal('53');
   subBytesResult = computed(() => this.aes.demonstrateSubBytes(this.subBytesInput()));
 
   // For S-Box display
@@ -83,10 +84,15 @@ export class AesOperations {
 
   updateSubBytesInput(event: Event) {
     const value = (event.target as HTMLInputElement).value;
+    this.subBytesInputText.set(value);
     const num = parseInt(value, 16);
     if (!isNaN(num) && num >= 0 && num <= 255) {
       this.subBytesInput.set(num);
     }
+  }
+
+  formatSubBytesInput() {
+    this.subBytesInputText.set(this.toHex(this.subBytesInput()));
   }
 
   toHex(n: number): string {

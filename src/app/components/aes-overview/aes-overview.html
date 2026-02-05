@@ -47,17 +47,17 @@
               </svg>
             </div>
             <div class="info-box__content">
-              <strong>Почему именно 128 бит?</strong>
-              <p>Rijndael (алгоритм, лёгший в основу AES) поддерживал блоки 128, 192 и 256 бит. NIST выбрал фиксированный размер 128 бит как оптимальный компромисс: достаточно большой для безопасности (birthday attack требует 2⁶⁴ блоков), но достаточно маленький для эффективной аппаратной реализации. Размер 4×4 байта идеально ложится на 128-битные SIMD-регистры процессоров.</p>
+              <strong>Why exactly 128 bits?</strong>
+              <p>Rijndael (the algorithm behind AES) supported blocks of 128, 192, and 256 bits. NIST chose a fixed 128-bit block size as the optimal trade-off: large enough for security (a birthday attack requires 2⁶⁴ blocks), yet small enough for efficient hardware implementation. The 4×4 byte size maps perfectly onto 128-bit SIMD registers in modern CPUs.</p>
             </div>
           </div>
 
-          <h3>Почему байты записываются столбцами, а не строками?</h3>
+          <h3>Why are bytes filled by columns, not rows?</h3>
           <p>
-            Это одна из самых неочевидных деталей AES. Когда вы берёте 16 байт входных данных, они заполняют матрицу состояния <strong>по столбцам (column-major order)</strong>, а не по строкам.
+            This is one of AES's least obvious details. When you take 16 bytes of input, they fill the state matrix <strong>column by column (column-major order)</strong>, not row by row.
           </p>
           <p>
-            Например, входные байты b₀, b₁, b₂, ... b₁₅ размещаются так:
+            For example, input bytes b₀, b₁, b₂, ... b₁₅ are arranged like this:
           </p>
 
           <div class="state-visual">
@@ -72,7 +72,7 @@
                   }
                 }
               </div>
-              <div class="state-matrix__note">b₀, b₁, b₂... → по столбцам</div>
+              <div class="state-matrix__note">b₀, b₁, b₂... → column by column</div>
             </div>
 
             <div class="state-arrow">
@@ -106,25 +106,25 @@
               </svg>
             </div>
             <div class="info-box__content">
-              <strong>Зачем column-major порядок?</strong>
-              <p>Это сделано для того, чтобы операция <em>MixColumns</em> работала с «правильными» данными. MixColumns обрабатывает каждый <strong>столбец</strong> матрицы как полином в поле Галуа.
-              Если записывать данные по столбцам, то каждый столбец содержит 4 последовательных байта входа — и MixColumns перемешивает именно их.
-              А ShiftRows, наоборот, сдвигает <strong>строки</strong>, перемешивая данные между столбцами.
-              Вместе эти две операции обеспечивают полную <em>диффузию</em> — каждый выходной бит зависит от всех входных битов уже после нескольких раундов.</p>
+              <strong>Why column-major order?</strong>
+              <p>This is designed so that <em>MixColumns</em> works with the correct data. MixColumns processes each <strong>column</strong> of the matrix as a polynomial over the Galois field.
+              By filling data column-wise, each column contains 4 consecutive input bytes — and MixColumns mixes precisely those.
+              ShiftRows, on the other hand, shifts <strong>rows</strong>, mixing data between columns.
+              Together, these two operations provide full <em>diffusion</em> — every output bit depends on all input bits after just a few rounds.</p>
             </div>
           </div>
 
           <h2>Substitution-Permutation Network (SPN)</h2>
           <p>
-            AES построен по архитектуре <strong>подстановочно-перестановочной сети (SPN)</strong>. Это означает, что каждый раунд состоит из чередования двух типов операций:
+            AES is built on the <strong>Substitution-Permutation Network (SPN)</strong> architecture. Each round consists of alternating two types of operations:
           </p>
           <ul>
-            <li><strong>Подстановка (Substitution):</strong> SubBytes заменяет каждый байт через S-Box. Это создаёт <em>нелинейность</em> — без неё шифр можно было бы взломать системой линейных уравнений.</li>
-            <li><strong>Перестановка (Permutation):</strong> ShiftRows и MixColumns перемешивают биты между позициями. Это создаёт <em>диффузию</em> — изменение одного бита входа влияет на все биты выхода.</li>
-            <li><strong>Ключевое смешивание:</strong> AddRoundKey XOR-ит состояние с раундовым ключом, внося зависимость от секрета.</li>
+            <li><strong>Substitution:</strong> SubBytes replaces each byte via the S-Box. This creates <em>non-linearity</em> — without it, the cipher could be broken by solving a system of linear equations.</li>
+            <li><strong>Permutation:</strong> ShiftRows and MixColumns mix bits across positions. This creates <em>diffusion</em> — changing one input bit affects all output bits.</li>
+            <li><strong>Key mixing:</strong> AddRoundKey XORs the state with the round key, introducing dependence on the secret.</li>
           </ul>
           <p>
-            Эта архитектура была предложена Клодом Шенноном ещё в 1949 году. Он доказал, что чередование «confusion» (запутывание) и «diffusion» (рассеивание) — необходимые свойства стойкого шифра.
+            This architecture was proposed by Claude Shannon in 1949. He proved that alternating "confusion" (obscuring key-ciphertext relationship) and "diffusion" (spreading plaintext influence) are necessary properties of a strong cipher.
           </p>
 
           <h2>Key Sizes and Rounds</h2>
@@ -166,15 +166,15 @@
               </svg>
             </div>
             <div class="info-box__content">
-              <strong>Почему 10 раундов для AES-128?</strong>
-              <p>Количество раундов выбрано с большим запасом прочности. Авторы Rijndael рассчитали, что полная диффузия достигается за 2 раунда. Для стойкости против дифференциального и линейного криптоанализа достаточно ~6 раундов.
-              10 раундов дают значительный запас безопасности. При этом увеличение ключа до 256 бит требует 14 раундов, чтобы компенсировать атаки по связанным ключам (related-key attacks).</p>
+              <strong>Why 10 rounds for AES-128?</strong>
+              <p>The number of rounds was chosen with a large security margin. Rijndael's authors calculated that full diffusion is achieved in just 2 rounds. Resistance to differential and linear cryptanalysis requires ~6 rounds.
+              10 rounds provide a significant safety margin. Increasing the key to 256 bits requires 14 rounds to compensate for related-key attacks.</p>
             </div>
           </div>
 
           <h2>Encryption Process</h2>
           <p>
-            Each round of AES consists of four transformations applied to the state matrix. The final round omits the MixColumns step (since без последующего SubBytes/ShiftRows он не добавляет безопасности, но усложняет расшифровку).
+            Each round of AES consists of four transformations applied to the state matrix. The final round omits the MixColumns step (since without a subsequent SubBytes/ShiftRows it adds no security, but would complicate decryption).
           </p>
 
           <div class="round-flow">
@@ -222,30 +222,30 @@
             </div>
           </div>
 
-          <h2>Galois Field GF(2⁸) — Математическая основа</h2>
+          <h2>Galois Field GF(2⁸) — Mathematical Foundation</h2>
           <p>
-            Все операции AES определены в <strong>конечном поле Галуа GF(2⁸)</strong>. Это поле из 256 элементов (по числу возможных значений байта), где определены сложение и умножение с особыми свойствами:
+            All AES operations are defined in the <strong>finite Galois field GF(2⁸)</strong>. This field has 256 elements (matching all possible byte values), with specially defined addition and multiplication:
           </p>
           <ul>
-            <li><strong>Сложение</strong> — это обычный XOR. 0x57 + 0x83 = 0xD4. Сложение и вычитание одинаковы (a + a = 0).</li>
-            <li><strong>Умножение</strong> — полиномиальное умножение по модулю неприводимого полинома x⁸ + x⁴ + x³ + x + 1 (= 0x11B). Это гарантирует, что результат всегда помещается в байт.</li>
+            <li><strong>Addition</strong> is simply XOR. 0x57 + 0x83 = 0xD4. Addition and subtraction are identical (a + a = 0).</li>
+            <li><strong>Multiplication</strong> is polynomial multiplication modulo the irreducible polynomial x⁸ + x⁴ + x³ + x + 1 (= 0x11B). This guarantees the result always fits in a single byte.</li>
           </ul>
           <p>
-            Почему именно этот полином? Он <em>неприводим</em> над GF(2) — его нельзя разложить на множители. Это как простое число, но для полиномов. Из всех неприводимых полиномов степени 8 над GF(2) авторы Rijndael выбрали 0x11B, потому что он даёт наиболее эффективную аппаратную реализацию.
+            Why this specific polynomial? It is <em>irreducible</em> over GF(2) — it cannot be factored. Think of it as a prime number, but for polynomials. Among all irreducible degree-8 polynomials over GF(2), the Rijndael authors chose 0x11B because it yields the most efficient hardware implementation.
           </p>
           <p>
-            В GF(2⁸) каждый ненулевой элемент имеет мультипликативный обратный — и это ключевое свойство для построения S-Box. Мультипликативный обратный байта b — это такой байт b⁻¹, что b × b⁻¹ = 1 в GF(2⁸).
+            In GF(2⁸) every non-zero element has a multiplicative inverse — and this is the key property for constructing the S-Box. The multiplicative inverse of byte b is a byte b⁻¹ such that b × b⁻¹ = 1 in GF(2⁸).
           </p>
 
-          <h2>Key Expansion — Расширение ключа</h2>
+          <h2>Key Expansion</h2>
           <p>
-            Из одного 128-битного ключа AES генерирует <strong>11 раундовых ключей</strong> (44 четырёхбайтных слова = 176 байт). Каждый раунд использует свой раундовый ключ для операции AddRoundKey.
+            From a single 128-bit key, AES generates <strong>11 round keys</strong> (44 four-byte words = 176 bytes). Each round uses its own round key for the AddRoundKey operation.
           </p>
           <p>
-            Алгоритм расширения ключа построен так, чтобы изменение <em>одного бита</em> исходного ключа приводило к изменению примерно <em>половины битов</em> в каждом раундовом ключе — это свойство называется <strong>лавинный эффект</strong>.
+            The key expansion algorithm is designed so that changing <em>one bit</em> of the original key changes roughly <em>half the bits</em> in every round key — a property known as the <strong>avalanche effect</strong>.
           </p>
           <p>
-            Подробное описание с интерактивной визуализацией доступно на вкладке <a routerLink="/operations">Key Expansion</a> в разделе операций.
+            A detailed description with an interactive visualization is available on the <a routerLink="/operations">Key Expansion</a> tab in the Operations section.
           </p>
 
           <div class="next-section">
@@ -279,7 +279,7 @@
             </li>
             <li>
               <span class="fact-list__label">Structure</span>
-              <span class="fact-list__value">Substitution-Permutation</span>
+              <span class="fact-list__value">SPN</span>
             </li>
             <li>
               <span class="fact-list__label">Adopted</span>
