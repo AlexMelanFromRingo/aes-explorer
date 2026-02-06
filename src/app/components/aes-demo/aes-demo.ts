@@ -76,10 +76,16 @@ export class AesDemo {
     if (this.isAnimating()) return;
 
     this.isAnimating.set(true);
-    this.currentStepIndex.set(0);
 
     const total = this.totalSteps();
-    for (let i = 0; i < total; i++) {
+    let start = this.currentStepIndex();
+
+    // If already at the last step, restart from beginning
+    if (start >= total - 1) {
+      start = 0;
+    }
+
+    for (let i = start; i < total; i++) {
       if (!this.isAnimating()) break;
       this.currentStepIndex.set(i);
       await new Promise(resolve => setTimeout(resolve, 500));

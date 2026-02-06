@@ -83,7 +83,7 @@
   }
 
   &__content {
-    strong {
+    > strong:first-child {
       display: block;
       margin-bottom: 0.5rem;
       color: var(--primary-300);
@@ -135,7 +135,7 @@
 
   &__icon { flex-shrink: 0; width: 24px; height: 24px; color: var(--primary-400); }
   &__content {
-    strong { display: block; margin-bottom: 0.5rem; color: var(--primary-300); }
+    > strong:first-child { display: block; margin-bottom: 0.5rem; color: var(--primary-300); }
     p { margin: 0; font-size: 0.9375rem; line-height: 1.7; color: var(--gray-300); }
   }
 }
